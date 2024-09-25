@@ -11,12 +11,31 @@ export interface paths {
   "/user": {
     get: operations["UserController_findAll"];
   };
+  "/auth/sign-in": {
+    post: operations["AuthController_signIn"];
+  };
+  "/auth/sign-up": {
+    post: operations["AuthController_signUp"];
+  };
 }
 
 export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    SigInputDto: {
+      email: string;
+      password: string;
+    };
+    SignInDto: {
+      accessToken: string;
+    };
+    CreateAccountInputDto: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -42,6 +61,36 @@ export interface operations {
     responses: {
       200: {
         content: never;
+      };
+    };
+  };
+  AuthController_signIn: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SigInputDto"];
+      };
+    };
+    responses: {
+      /** @description Sign in */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SignInDto"];
+        };
+      };
+    };
+  };
+  AuthController_signUp: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateAccountInputDto"];
+      };
+    };
+    responses: {
+      /** @description Sign in */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SignInDto"];
+        };
       };
     };
   };
