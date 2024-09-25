@@ -38,6 +38,9 @@ dependencies:
   axios:
     specifier: ^1.6.7
     version: 1.6.7
+  clsx:
+    specifier: ^2.1.1
+    version: 2.1.1
   framer-motion:
     specifier: ^11.0.6
     version: 11.0.6(react-dom@18.2.0)(react@18.2.0)
