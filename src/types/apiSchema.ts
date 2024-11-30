@@ -17,6 +17,29 @@ export interface paths {
   "/auth/sign-up": {
     post: operations["AuthController_signUp"];
   };
+  "/organization": {
+    get: operations["OrganizationController_getAllUserOrganizations"];
+    post: operations["OrganizationController_createOrganization"];
+  };
+  "/organization-member/{organizationId}": {
+    get: operations["OrganizationMemberController_getOrganizationMembers"];
+    post: operations["OrganizationMemberController_addMember"];
+  };
+  "/project": {
+    post: operations["ProjectController_createOrganization"];
+  };
+  "/project/{organizationId}": {
+    get: operations["ProjectController_getProjectsByOrganizationId"];
+  };
+  "/project/user/all": {
+    get: operations["ProjectController_getAllUserProjects"];
+  };
+  "/project-board/{projectId}": {
+    get: operations["ProjectBoardController_getProjectBoard"];
+  };
+  "/project-board/{projectId}/columns": {
+    get: operations["ProjectBoardController_getColumnsByProjectId"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -35,6 +58,70 @@ export interface components {
       password: string;
       firstName: string;
       lastName: string;
+    };
+    CreateOrganizationInputDto: {
+      name: string;
+    };
+    OrganizationOwnerDto: {
+      id: string;
+      name: string;
+    };
+    UserOrganizationDto: {
+      id: string;
+      name: string;
+      joinedAt: string;
+      owner: components["schemas"]["OrganizationOwnerDto"];
+    };
+    OrganizationMemberDto: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      /** Format: date-time */
+      joinedAt: string;
+      role: string;
+    };
+    OrganizationMemberInputDto: {
+      email: string;
+      role: string;
+      organizationId: string;
+    };
+    CreateProjectInputDto: {
+      name: string;
+      code: string;
+      organizationId: string;
+    };
+    ProjectDto: {
+      id: string;
+      name: string;
+      code: string;
+      organizationId: string;
+      organization: components["schemas"]["UserOrganizationDto"];
+    };
+    TaskAssignedUserDto: {
+      id: string;
+      name: unknown;
+    };
+    BoardTaskDto: {
+      id: string;
+      name: string;
+      code: string;
+      assignedUser: components["schemas"]["TaskAssignedUserDto"];
+      priority: string;
+    };
+    ProjectColumnWithTasksDto: {
+      id: string;
+      name: string;
+      order: number;
+      tasks: components["schemas"]["BoardTaskDto"][];
+    };
+    ProjectBoardDto: {
+      columns: components["schemas"]["ProjectColumnWithTasksDto"][];
+    };
+    ProjectColumnDto: {
+      id: string;
+      name: string;
+      order: number;
     };
   };
   responses: never;
@@ -90,6 +177,126 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["SignInDto"];
+        };
+      };
+    };
+  };
+  OrganizationController_getAllUserOrganizations: {
+    responses: {
+      /** @description Get all user organizations */
+      200: {
+        content: {
+          "application/json": components["schemas"]["UserOrganizationDto"][];
+        };
+      };
+    };
+  };
+  OrganizationController_createOrganization: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateOrganizationInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        content: never;
+      };
+    };
+  };
+  OrganizationMemberController_getOrganizationMembers: {
+    parameters: {
+      path: {
+        organizationId: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OrganizationMemberDto"][];
+        };
+      };
+    };
+  };
+  OrganizationMemberController_addMember: {
+    parameters: {
+      path: {
+        organizationId: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["OrganizationMemberInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        content: never;
+      };
+    };
+  };
+  ProjectController_createOrganization: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateProjectInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        content: never;
+      };
+    };
+  };
+  ProjectController_getProjectsByOrganizationId: {
+    parameters: {
+      path: {
+        organizationId: string;
+      };
+    };
+    responses: {
+      /** @description Get all projects by organization id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectDto"][];
+        };
+      };
+    };
+  };
+  ProjectController_getAllUserProjects: {
+    responses: {
+      /** @description Get all projects by user id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectDto"][];
+        };
+      };
+    };
+  };
+  ProjectBoardController_getProjectBoard: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get project board */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectBoardDto"];
+        };
+      };
+    };
+  };
+  ProjectBoardController_getColumnsByProjectId: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get columns by project id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectColumnDto"][];
         };
       };
     };

@@ -7,7 +7,7 @@ import Sidebar from './components/Sidebar';
 function BaseLayout() {
     return (
         <Stack direction="row" className="h-screen" sx={{ backgroundColor: grey[50] }}>
-            <Sidebar />
+            {/* <Sidebar /> */}
             <Stack flex={1}>
                 <TopBar />
                 <Content />

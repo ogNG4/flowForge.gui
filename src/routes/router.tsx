@@ -4,13 +4,15 @@ import { RouteObject, createBrowserRouter, redirect } from 'react-router-dom';
 
 async function loginLoader() {
     const token = auth.getDecodedToken();
-    if (token) return redirect('/');
+    if (token && !auth.isTokenExpired()) return redirect('/');
     return null;
 }
 
 async function protectedLoader() {
     const token = auth.getDecodedToken();
-    if (!token) return redirect('/auth/login');
+    const isExpired = auth.isTokenExpired();
+    console.log('isExpired', isExpired);
+    if (!token || isExpired) return redirect('/auth/login');
     return token;
 }
 
@@ -20,7 +22,10 @@ export const AuthLayout = React.lazy(() => import('@/pages/layouts/AuthLayout'))
 export const LoginPage = React.lazy(() => import('@/pages/(Auth)/Login/Page'));
 export const CreateAccountPage = React.lazy(() => import('@/pages/(Auth)/CreateAccount/Page'));
 
-export const HomePage = React.lazy(() => import('@/pages/Page'));
+export const OrganizationsPage = React.lazy(() => import('@/pages/Organizations/Organizations'));
+export const OrganizationDetailsPage = React.lazy(() => import('@/pages/Organizations/OrganizationDetails'));
+export const ProjectsPage = React.lazy(() => import('@/pages/Project/Projects'));
+export const ProjectDetailsPage = React.lazy(() => import('@/pages/Project/ProjectDetails'));
 
 const routeProps = {
     loader: protectedLoader,
@@ -34,7 +39,12 @@ export const routeList: RouteObject[] = [
         id: 'root',
         path: '/',
         element: <BaseLayout />,
-        children: [{ ...routeProps, path: '/', element: <HomePage /> }],
+        children: [
+            { ...routeProps, path: '/', element: <OrganizationsPage /> },
+            { ...routeProps, path: 'organizations/:id', element: <OrganizationDetailsPage /> },
+            { ...routeProps, path: 'projects', element: <ProjectsPage /> },
+            { ...routeProps, path: 'projects/:id', element: <ProjectDetailsPage /> },
+        ],
     },
     {
         id: 'auth',

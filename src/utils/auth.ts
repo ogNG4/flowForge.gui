@@ -16,4 +16,11 @@ export default {
             return null;
         }
     },
+    isTokenExpired() {
+        const token = this.getDecodedToken();
+        if (!token) return true;
+
+        const currentTime = Date.now() / 1000;
+        return token.exp! < currentTime;
+    },
 };

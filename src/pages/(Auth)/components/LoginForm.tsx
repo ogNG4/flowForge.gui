@@ -60,7 +60,7 @@ function LoginForm() {
             <FormProvider {...methods}>
                 <Stack component="form" spacing={2} onSubmit={handleSubmit(handleSave)} className="w-1/5 max-w-[450px]">
                     <TextInput<FormInput> name="email" label={t('Email')} />
-                    <TextInput<FormInput> name="password" label={t('Hasło')} />
+                    <TextInput<FormInput> name="password" type="password" label={t('Hasło')} />
                     <Stack direction="row" className="justify-between">
                         <Link href="/auth/create-account">{t('Zarejestruj się')}</Link>
                         <Link href="/auth/forgot-password">{t('Zapomniałeś hasła?')}</Link>
