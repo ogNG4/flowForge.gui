@@ -12,6 +12,7 @@ export { default as useAddOrganizationMemberMutation } from './mutations/useAddO
 export { default as useCreateProjectMutation } from './mutations/useCreateProjectMutation';
 export { default as useCreateTaskMutation } from './mutations/useCreateTaskMutation';
 export { default as useUpdateTaskColumnMutation } from './mutations/useUpdateTaskColumnMutation';
+export { default as useAddTimeLogMutation } from './mutations/useAddTimeLogMutation';
 
 export { default as useUserOrganizationsQuery } from './queries/useUserOrganizationsQuery';
 export { default as useOrganizationMembersQuery } from './queries/useOrganizationMembersQuery';

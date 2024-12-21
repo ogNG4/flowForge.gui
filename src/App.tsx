@@ -11,6 +11,14 @@ import { Suspense } from 'react';
 import { theme } from './utils/theme';
 import { ThemeProvider } from './theme';
 import PageLoader from '@/components/Loading/PageLoader';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pl';
+
+// Konfiguracja dayjs
+dayjs.locale('pl');
+
 function App() {
     const queryClient = new QueryClient();
     return (
@@ -19,7 +27,9 @@ function App() {
                 <ChakraProvider theme={theme}>
                     <ThemeProvider>
                         <Suspense fallback={<PageLoader />}>
-                            <RouterProvider router={router} />
+                            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
+                                <RouterProvider router={router} />
+                            </LocalizationProvider>
                         </Suspense>
                     </ThemeProvider>
                 </ChakraProvider>

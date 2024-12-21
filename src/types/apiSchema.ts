@@ -56,6 +56,9 @@ export interface paths {
   "/project-task/column": {
     put: operations["ProjectTaskController_updateTaskColumn"];
   };
+  "/project-task/time-log": {
+    post: operations["ProjectTaskController_createTimeLog"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -154,6 +157,9 @@ export interface components {
       content: string;
       columnId: string;
       organizationId: string;
+      timeLogs: string[];
+      totalTimeSpent: number;
+      estimatedTime: number;
     };
     CreateTaskInputDto: {
       name: string;
@@ -162,6 +168,7 @@ export interface components {
       columnId: string;
       priority: string;
       assignedUserId?: string;
+      estimatedTime?: number;
     };
     UpdateTaskColumnInputDto: {
       taskId: string;
@@ -175,6 +182,12 @@ export interface components {
       columnId: string;
       priority: string;
       assignedUserId?: string;
+      estimatedTime?: number;
+    };
+    TaskTimeLogInputDto: {
+      taskId: string;
+      timeSpent: number;
+      description?: string;
     };
   };
   responses: never;
@@ -431,6 +444,18 @@ export interface operations {
     };
     responses: {
       200: {
+        content: never;
+      };
+    };
+  };
+  ProjectTaskController_createTimeLog: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TaskTimeLogInputDto"];
+      };
+    };
+    responses: {
+      201: {
         content: never;
       };
     };

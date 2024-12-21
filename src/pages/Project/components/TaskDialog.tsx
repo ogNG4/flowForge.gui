@@ -6,6 +6,7 @@ import {
     DialogActions,
     DialogContent,
     Divider,
+    LinearProgress,
     MenuItem,
     Paper,
     Stack,
@@ -18,6 +19,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import {
     useCreateTaskMutation,
     useGetProjectColumnsQuery,
+    useModal,
     useOrganizationMembersQuery,
     useProjectDetailsQuery,
 } from '@/hooks';
@@ -33,6 +35,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useUpdateTaskMutation from '@/hooks/mutations/useUpdateTaskMutation';
 import UserAvatar from '@/components/Avatar/UserAvatar';
 import { Else, If, Then } from 'react-if';
+import { isValidTimeFormat, minutesToTimeString, timeStringToMinutes } from '@/utils/common';
+import TimeLogDialog from './TimeLogDialog';
 
 interface FormInput {
     name: string;
@@ -43,10 +47,12 @@ interface FormInput {
     assignedUserId: string;
     assignedUserName: string;
     code: string;
+    estimatedTime: number;
+    totalTimeSpent: number;
 }
 
 function EditForm() {
-    const { taskId, id: projectId, edited } = useParams();
+    const { id: projectId } = useParams();
     const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
     const methods = useFormContext<FormInput>();
     const { getValues } = methods;
@@ -67,7 +73,9 @@ function EditForm() {
                     <Controller<FormInput>
                         name="content"
                         control={methods.control}
-                        render={({ field }) => <Editor defaultValue={field.value} onTextChange={field.onChange} />}
+                        render={({ field }) => (
+                            <Editor defaultValue={field.value || ''} onTextChange={field.onChange} />
+                        )}
                     />
                 </Stack>
             </Stack>
@@ -108,6 +116,7 @@ function EditForm() {
                         </MenuItem>
                     ))}
                 </SelectInput>
+                <TextInput<FormInput> name="estimatedTime" label="Czas estymowany" />
             </Stack>
         </Stack>
     );
@@ -115,13 +124,15 @@ function EditForm() {
 
 function DisplayTask() {
     const methods = useFormContext<FormInput>();
-    const { id: projectId } = useParams();
+    const { id: projectId, taskId } = useParams();
     const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
     const { getValues } = methods;
     const taskColumn = columns?.find((column) => column.id === getValues('columnId'));
+    const { handleOpen, open, handleClose } = useModal();
 
     return (
         <>
+            <TimeLogDialog open={open} onClose={handleClose} taskId={taskId as string} />
             <Stack px={2}>
                 <Typography>{getValues('code')}</Typography>
                 <Typography variant="h5">{getValues('name')}</Typography>
@@ -173,6 +184,26 @@ function DisplayTask() {
                                 </Typography>
                                 <Chip label={taskColumn?.name || ''} color="primary" sx={{ width: 'max-content' }} />
                             </Stack>
+                            <Stack>
+                                <Typography variant="caption" fontWeight={500}>
+                                    Czas pracy
+                                </Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={Math.min(
+                                        (getValues('totalTimeSpent') / getValues('estimatedTime')) * 100,
+                                        100
+                                    )}
+                                    sx={{ height: 10, borderRadius: 10 }}
+                                />
+                                <Typography variant="caption">
+                                    {minutesToTimeString(getValues('totalTimeSpent'))} /{' '}
+                                    {minutesToTimeString(getValues('estimatedTime'))}
+                                </Typography>
+                            </Stack>
+                            <Button variant="outlined" onClick={handleOpen}>
+                                Zaloguj czas
+                            </Button>
                         </Stack>
                     </Paper>
                 </Stack>
@@ -200,6 +231,10 @@ function TaskDialog() {
                 .min(3, 'Nazwa musi mieć co najmniej 3 znaki.')
                 .max(50, 'Nazwa nie może mieć więcej niż 50 znaków.'),
             columnId: yup.string().required('Status jest wymagany'),
+            estimatedTime: yup.string().test('format', 'Nieprawidłowy format czasu (np. 2h 30m)', (value) => {
+                if (!value) return true;
+                return isValidTimeFormat(value);
+            }),
         };
 
         return yup.object().shape(schema);
@@ -220,6 +255,8 @@ function TaskDialog() {
             assignedUserId: task?.assignedUser?.id || '',
             assignedUserName: (task?.assignedUser?.name as string) || '',
             code: task?.code || '',
+            estimatedTime: task?.estimatedTime || 0,
+            totalTimeSpent: task?.totalTimeSpent,
         });
     }, [task, columns]);
 
@@ -231,6 +268,7 @@ function TaskDialog() {
                 content: data.content,
                 priority: data.priority,
                 assignedUserId: data.assignedUserId,
+                estimatedTime: timeStringToMinutes(String(data.estimatedTime)),
             };
 
             if (isNew) {
@@ -260,37 +298,39 @@ function TaskDialog() {
     );
 
     return (
-        <Dialog open onClose={() => navigate(-1)} fullWidth maxWidth="md">
-            <FormProvider {...methods}>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <DialogContent sx={{ minHeight: '40vh' }}>
-                        {isEditMode ? <EditForm /> : <DisplayTask />}
-                    </DialogContent>
-                    <DialogActions sx={{ py: 2, px: 5 }}>
-                        <Box sx={{ width: '100%' }}>
-                            <If condition={isEditMode}>
-                                <Then>
-                                    <Button type="submit" variant="contained">
-                                        Zapisz
-                                    </Button>
-                                </Then>
-                                <Else>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => navigate(`/projects/${projectId}/task/${taskId}/1`)}
-                                    >
-                                        Edytuj
-                                    </Button>
-                                </Else>
-                            </If>
-                            <Button type="submit" variant="text" onClick={() => navigate(-1)}>
-                                Anuluj
-                            </Button>
-                        </Box>
-                    </DialogActions>
-                </form>
-            </FormProvider>
-        </Dialog>
+        <>
+            <Dialog open onClose={() => navigate(-1)} fullWidth maxWidth="md">
+                <FormProvider {...methods}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <DialogContent sx={{ minHeight: '40vh' }}>
+                            {isEditMode ? <EditForm /> : <DisplayTask />}
+                        </DialogContent>
+                        <DialogActions sx={{ py: 2, px: 5 }}>
+                            <Box sx={{ width: '100%' }}>
+                                <If condition={isEditMode}>
+                                    <Then>
+                                        <Button type="submit" variant="contained">
+                                            Zapisz
+                                        </Button>
+                                    </Then>
+                                    <Else>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => navigate(`/projects/${projectId}/task/${taskId}/1`)}
+                                        >
+                                            Edytuj
+                                        </Button>
+                                    </Else>
+                                </If>
+                                <Button type="submit" variant="text" onClick={() => navigate(-1)}>
+                                    Anuluj
+                                </Button>
+                            </Box>
+                        </DialogActions>
+                    </form>
+                </FormProvider>
+            </Dialog>
+        </>
     );
 }
 
