@@ -34,11 +34,27 @@ export interface paths {
   "/project/user/all": {
     get: operations["ProjectController_getAllUserProjects"];
   };
+  "/project/details/{projectId}": {
+    get: operations["ProjectController_getProjectDetails"];
+  };
   "/project-board/{projectId}": {
     get: operations["ProjectBoardController_getProjectBoard"];
   };
   "/project-board/{projectId}/columns": {
     get: operations["ProjectBoardController_getColumnsByProjectId"];
+  };
+  "/project-task/{projectId}/newest-task": {
+    get: operations["ProjectTaskController_getNewestTask"];
+  };
+  "/project-task/{taskId}": {
+    get: operations["ProjectTaskController_getTaskDetails"];
+  };
+  "/project-task": {
+    put: operations["ProjectTaskController_updateTask"];
+    post: operations["ProjectTaskController_createTask"];
+  };
+  "/project-task/column": {
+    put: operations["ProjectTaskController_updateTaskColumn"];
   };
 }
 
@@ -100,7 +116,7 @@ export interface components {
     };
     TaskAssignedUserDto: {
       id: string;
-      name: unknown;
+      name: string;
     };
     BoardTaskDto: {
       id: string;
@@ -108,6 +124,7 @@ export interface components {
       code: string;
       assignedUser: components["schemas"]["TaskAssignedUserDto"];
       priority: string;
+      aboveTaskId: Record<string, never>;
     };
     ProjectColumnWithTasksDto: {
       id: string;
@@ -122,6 +139,42 @@ export interface components {
       id: string;
       name: string;
       order: number;
+    };
+    NewestTaskDto: {
+      id: string;
+      code: string;
+    };
+    TaskDetailsDto: {
+      id: string;
+      name: string;
+      code: string;
+      assignedUser: components["schemas"]["TaskAssignedUserDto"];
+      priority: string;
+      aboveTaskId: Record<string, never>;
+      content: string;
+      columnId: string;
+      organizationId: string;
+    };
+    CreateTaskInputDto: {
+      name: string;
+      content: string;
+      projectId: string;
+      columnId: string;
+      priority: string;
+      assignedUserId?: string;
+    };
+    UpdateTaskColumnInputDto: {
+      taskId: string;
+      columnId: string;
+      aboveTaskId?: Record<string, never>;
+    };
+    UpdateTaskInputDto: {
+      taskId: string;
+      name: string;
+      content: string;
+      columnId: string;
+      priority: string;
+      assignedUserId?: string;
     };
   };
   responses: never;
@@ -271,6 +324,21 @@ export interface operations {
       };
     };
   };
+  ProjectController_getProjectDetails: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get project details */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectDto"];
+        };
+      };
+    };
+  };
   ProjectBoardController_getProjectBoard: {
     parameters: {
       path: {
@@ -298,6 +366,72 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ProjectColumnDto"][];
         };
+      };
+    };
+  };
+  ProjectTaskController_getNewestTask: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get newest task by project id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["NewestTaskDto"];
+        };
+      };
+    };
+  };
+  ProjectTaskController_getTaskDetails: {
+    parameters: {
+      path: {
+        taskId: string;
+      };
+    };
+    responses: {
+      /** @description Get task details by task id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["TaskDetailsDto"];
+        };
+      };
+    };
+  };
+  ProjectTaskController_updateTask: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTaskInputDto"];
+      };
+    };
+    responses: {
+      200: {
+        content: never;
+      };
+    };
+  };
+  ProjectTaskController_createTask: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateTaskInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        content: never;
+      };
+    };
+  };
+  ProjectTaskController_updateTaskColumn: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTaskColumnInputDto"];
+      };
+    };
+    responses: {
+      200: {
+        content: never;
       };
     };
   };

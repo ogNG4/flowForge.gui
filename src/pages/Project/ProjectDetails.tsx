@@ -1,64 +1,72 @@
-import { Button, Stack, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import Column from './components/Column';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
-import { useState } from 'react';
-import { useModal, useProjectBoardQuery } from '@/hooks';
+import { useMemo, useState } from 'react';
+import { useModal, useProjectBoardQuery, useSearchValue, useUpdateTaskColumnMutation } from '@/hooks';
 import TaskDialog from './components/TaskDialog';
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/constants/queryKeys';
+import SearchInput from '@/components/Form/SearchInput';
 
 export default function ProjectDetails() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { data: projectBoard } = useProjectBoardQuery({ projectId: id as string });
-    console.log({ projectBoard });
-    const columns = projectBoard?.columns;
-    const [columnsList, setColumnsList] = useState(columns);
-    const { open: openTaskDialog, handleOpen: handleOpenTaskDialog, handleClose: onCloseTaskDialog } = useModal();
+    const client = useQueryClient();
+    const columns = projectBoard?.columns.sort((a, b) => a.order - b.order);
+    const { mutate: updateTaskColumn } = useUpdateTaskColumnMutation();
+    const { searchValue: tasksSearchValue, setSearchValue: setTasksSearchValue } = useSearchValue();
 
-    // const handleDragEnd = (event: DragEndEvent) => {
-    //     const { active, over } = event;
+    const filteredColumns = useMemo(() => {
+        if (!columns) return [];
 
-    //     if (!over) return;
+        return columns.map((column) => ({
+            ...column,
+            tasks: column.tasks.filter((task) => {
+                const searchLower = tasksSearchValue.toLowerCase();
+                return task.name.toLowerCase().includes(searchLower) || task.code.toLowerCase().includes(searchLower);
+            }),
+        }));
+    }, [columns, tasksSearchValue]);
 
-    //     const activeTask = active.id;
-    //     const targetColumnId = over.id;
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
 
-    //     // Znajdź kolumnę i task, który jest przenoszony
-    //     const sourceColumn = columnsList.find((col) => col.tasks.some((task) => task.id === activeTask));
-    //     const taskToMove = sourceColumn?.tasks.find((task) => task.id === activeTask);
+        if (over && active.id !== over.id) {
+            const overColumn = columns?.find((column) => column.id === over.id);
+            const overTasks = overColumn?.tasks || [];
+            const activeIndex = overTasks.findIndex((task) => task.id === active.id);
+            const aboveTaskId = activeIndex === 0 ? null : overTasks[activeIndex - 1]?.id;
 
-    //     if (!sourceColumn || !taskToMove) return;
-
-    //     // Usuń task ze starej kolumny i dodaj do nowej
-    //     setColumnsList((columns) =>
-    //         columns.map((col) => {
-    //             if (col.id === sourceColumn.id) {
-    //                 return {
-    //                     ...col,
-    //                     tasks: col.tasks.filter((task) => task.id !== activeTask),
-    //                 };
-    //             }
-    //             if (col.id === targetColumnId) {
-    //                 return {
-    //                     ...col,
-    //                     tasks: [...col.tasks, taskToMove],
-    //                 };
-    //             }
-    //             return col;
-    //         })
-    //     );
-    // };
+            updateTaskColumn(
+                {
+                    taskId: active.id as string,
+                    columnId: over.id as string,
+                    aboveTaskId: aboveTaskId || (null as any),
+                },
+                {
+                    onSuccess: () => {
+                        client.invalidateQueries({ queryKey: [queryKeys.projectBoard, id] });
+                    },
+                }
+            );
+        }
+    };
 
     return (
         <>
-            {openTaskDialog && (
-                <TaskDialog onClose={onCloseTaskDialog} open={openTaskDialog} projectId={id as string} />
-            )}
+            <Outlet />
             <Stack className="gap-2 h-screen">
-                <Button onClick={handleOpenTaskDialog}>Dodaj task</Button>
-                <Typography>Projekt test</Typography>
-                <DndContext>
-                    <Stack direction="row" className="gap-2 flex-1">
-                        {columns?.map((column) => (
+                <Stack direction="row" className="gap-2">
+                    <SearchInput searchValue={tasksSearchValue} setSearchValue={setTasksSearchValue} />
+                    <Button onClick={() => navigate(`/projects/${id}/task/0/1`)} variant="contained">
+                        Dodaj zadanie
+                    </Button>
+                </Stack>
+                <DndContext onDragEnd={handleDragEnd}>
+                    <Stack direction="row" className="gap-3 flex-1">
+                        {filteredColumns?.map((column) => (
                             <Column key={column.id} id={column.id} name={column.name} tasks={column.tasks} />
                         ))}
                     </Stack>

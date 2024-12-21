@@ -10,7 +10,6 @@ type Response = MutationPath['responses']['200']['content']['application/json'];
 
 const get = async () => {
     const { data } = await api.getClient().get(path);
-    console.log({ data });
     return data;
 };
 

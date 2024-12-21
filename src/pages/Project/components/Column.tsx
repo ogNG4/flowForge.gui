@@ -2,6 +2,7 @@ import { Divider, Stack, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import TaskCard from './TaskCard';
 import { useDroppable } from '@dnd-kit/core';
+import { useNavigate } from 'react-router-dom';
 
 interface ColumnProps {
     id: string;
@@ -15,14 +16,14 @@ export default function Column({ id, name, tasks }: ColumnProps) {
     });
 
     return (
-        <Stack ref={setNodeRef} bgcolor={grey[200]} className="rounded-sm min-w-[350px] h-full">
+        <Stack ref={setNodeRef} bgcolor={grey[100]} className="rounded-sm min-w-[350px] h-full">
             <Typography fontWeight={500} color={grey[700]} className="p-2">
                 {name.toUpperCase()}
             </Typography>
             <Divider className="mb-1 " />
             <Stack className="gap-2 p-1">
                 {tasks.map((task: any) => (
-                    <TaskCard key={task.id} id={task.id} name={task.name} />
+                    <TaskCard key={task.id} task={task} />
                 ))}
             </Stack>
         </Stack>

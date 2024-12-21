@@ -5,4 +5,6 @@ export default {
     userProjects: 'userProjects',
     projectBoard: 'projectBoard',
     projectColumns: 'projectColumns',
+    taskDetails: 'taskDetails',
+    projectDetails: 'projectDetails',
 };

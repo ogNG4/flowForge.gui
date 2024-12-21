@@ -11,7 +11,6 @@ async function loginLoader() {
 async function protectedLoader() {
     const token = auth.getDecodedToken();
     const isExpired = auth.isTokenExpired();
-    console.log('isExpired', isExpired);
     if (!token || isExpired) return redirect('/auth/login');
     return token;
 }
@@ -26,6 +25,7 @@ export const OrganizationsPage = React.lazy(() => import('@/pages/Organizations/
 export const OrganizationDetailsPage = React.lazy(() => import('@/pages/Organizations/OrganizationDetails'));
 export const ProjectsPage = React.lazy(() => import('@/pages/Project/Projects'));
 export const ProjectDetailsPage = React.lazy(() => import('@/pages/Project/ProjectDetails'));
+export const DetailTaskDialog = React.lazy(() => import('@/pages/Project/components/TaskDialog'));
 
 const routeProps = {
     loader: protectedLoader,
@@ -43,7 +43,13 @@ export const routeList: RouteObject[] = [
             { ...routeProps, path: '/', element: <OrganizationsPage /> },
             { ...routeProps, path: 'organizations/:id', element: <OrganizationDetailsPage /> },
             { ...routeProps, path: 'projects', element: <ProjectsPage /> },
-            { ...routeProps, path: 'projects/:id', element: <ProjectDetailsPage /> },
+            {
+                ...routeProps,
+                path: 'projects/:id',
+                element: <ProjectDetailsPage />,
+                children: [{ ...routeProps, path: 'task/:taskId/:edit', element: <DetailTaskDialog /> }],
+            },
+            // { ...routeProps, path: 'projects/:projectId/task/:taskId', element: <DetailTaskDialog /> },
         ],
     },
     {

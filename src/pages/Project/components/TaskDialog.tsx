@@ -1,30 +1,45 @@
-import TextEditor from '@/components/Editor/TextEditor';
-import { Box, Button, Dialog, DialogContent, DialogProps, MenuItem, Paper, Stack } from '@mui/material';
-import { FormProvider, useForm, Controller } from 'react-hook-form';
-import { useMemo, useState } from 'react';
+import { Box, Button, Dialog, DialogActions, DialogContent, MenuItem, Stack, Typography } from '@mui/material';
+import { FormProvider, useForm, Controller, useFormContext } from 'react-hook-form';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useGetProjectColumnsQuery } from '@/hooks';
+import {
+    useCreateTaskMutation,
+    useGetProjectColumnsQuery,
+    useOrganizationMembersQuery,
+    useProjectDetailsQuery,
+} from '@/hooks';
 import TextInput from '@/components/Form/TextInput';
 import SelectInput from '@/components/Form/SelectInput';
 import Editor from '@/components/Editor/Editor';
-
-interface TaskDialogProps extends DialogProps {
-    isEdit?: boolean;
-    projectId: string;
-}
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/constants/queryKeys';
+import { TaskPriority } from '@/constants/domain';
+import { PriorityLabel } from '@/components/Kanban/PriorityLabel';
+import { components } from '@/types/apiSchema';
+import useTaskDetailsQuery from '@/hooks/queries/useTaskDetailsQuery';
+import { useNavigate, useParams } from 'react-router-dom';
+import useUpdateTaskMutation from '@/hooks/mutations/useUpdateTaskMutation';
+import UserAvatar from '@/components/Avatar/UserAvatar';
+import { Else, If, Then } from 'react-if';
 
 interface FormInput {
     name: string;
-    priority: string;
     columnId: string;
     content: string;
+    priority: TaskPriority;
+    organizationId: string;
+    assignedUserId: string;
+    assignedUserName: string;
 }
 
-function EditForm({ projectId }: { projectId: string }) {
+function EditForm() {
+    const { taskId, id: projectId, edited } = useParams();
     const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
-
-    const methods = useForm<FormInput>();
+    const methods = useFormContext<FormInput>();
+    const { getValues } = methods;
+    const organizationId = getValues('organizationId');
+    const { data: members } = useOrganizationMembersQuery({ organizationId: organizationId });
 
     const sortedColumns = useMemo(() => {
         return columns ? [...columns].sort((a, b) => a.order - b.order) : [];
@@ -43,10 +58,6 @@ function EditForm({ projectId }: { projectId: string }) {
                         render={({ field }) => <Editor defaultValue={field.value} onTextChange={field.onChange} />}
                     />
                 </Stack>
-                <Button type="submit" variant="contained" className="w-[10px]">
-                    {' '}
-                    dupa
-                </Button>
             </Stack>
             <Stack spacing={2} flex={1}>
                 <SelectInput<FormInput> name="columnId" label="Status">
@@ -56,15 +67,58 @@ function EditForm({ projectId }: { projectId: string }) {
                         </MenuItem>
                     ))}
                 </SelectInput>
+                <SelectInput<FormInput> name="priority" label="Priorytet">
+                    <MenuItem value={TaskPriority.LOW}>
+                        <PriorityLabel priority={TaskPriority.LOW} />
+                    </MenuItem>
+                    <MenuItem value={TaskPriority.MEDIUM}>
+                        <PriorityLabel priority={TaskPriority.MEDIUM} />
+                    </MenuItem>
+                    <MenuItem value={TaskPriority.HIGH}>
+                        <PriorityLabel priority={TaskPriority.HIGH} />
+                    </MenuItem>
+                </SelectInput>
+                <SelectInput<FormInput> name="assignedUserId" label="Przydzielony do" defaultValue="">
+                    <MenuItem value="">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <UserAvatar size="small" />
+                            <Typography>Brak</Typography>
+                        </Stack>
+                    </MenuItem>
+                    {members?.map((member) => (
+                        <MenuItem key={member.id} value={member.id}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <UserAvatar firstName={member.firstName} size="small" />
+                                <Typography>
+                                    {member.firstName} {member.lastName}
+                                </Typography>
+                            </Stack>
+                        </MenuItem>
+                    ))}
+                </SelectInput>
             </Stack>
         </Stack>
     );
 }
 
-function TaskDialog({ open, onClose, isEdit, projectId }: TaskDialogProps) {
-    const [isEditMode, setIsEditMode] = useState(true);
-    const { data: columns } = useGetProjectColumnsQuery({ projectId });
+function DisplayTask() {
+    const methods = useFormContext<FormInput>();
+    const { getValues } = methods;
 
+    return <div>dupa</div>;
+}
+
+function TaskDialog() {
+    const navigate = useNavigate();
+    const { taskId, id: projectId, edit } = useParams();
+    const isNew = taskId === '0';
+    const isEditMode = edit === '1';
+    const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
+    const { data: task } = useTaskDetailsQuery({ taskId: taskId as string }, { enabled: !isNew });
+    const { data: projectDetails } = useProjectDetailsQuery({ projectId: projectId as string });
+    const { mutate: createTask } = useCreateTaskMutation();
+    const { mutate: updateTask } = useUpdateTaskMutation();
+    const client = useQueryClient();
     const validationSchema = useMemo(() => {
         const schema = {
             name: yup
@@ -80,33 +134,87 @@ function TaskDialog({ open, onClose, isEdit, projectId }: TaskDialogProps) {
 
     const methods = useForm<FormInput>({
         resolver: yupResolver(validationSchema as yup.ObjectSchema<FormInput>),
-        defaultValues: {
-            columnId: columns?.[0]?.id || '',
-            name: '',
-            priority: '',
-            content: '',
-        },
     });
-    const { handleSubmit, reset, setValue, getValues } = methods;
+    const { handleSubmit, reset } = methods;
 
-    const onSubmit = async (data: FormInput) => {
-        try {
-            // TODO: Dodaj tutaj wywołanie API do zapisywania zadania
-            console.log('Submitted data:', data);
-            // onClose?.({}, 'backdropClick'); // zamknij dialog po udanym zapisie
-            // reset(); // zresetuj formularz
-        } catch (error) {
-            console.error('Error submitting task:', error);
-        }
-    };
+    useEffect(() => {
+        reset({
+            priority: (task?.priority as TaskPriority) || TaskPriority.MEDIUM,
+            columnId: task?.columnId || columns?.[0]?.id || '',
+            name: task?.name || '',
+            content: task?.content || '',
+            organizationId: projectDetails?.organizationId || task?.organizationId || '',
+            assignedUserId: task?.assignedUser?.id || '',
+            assignedUserName: (task?.assignedUser?.name as string) || '',
+        });
+    }, [task, columns]);
+
+    const onSubmit = useCallback(
+        async (data: FormInput) => {
+            const commonData = {
+                columnId: data.columnId,
+                name: data.name,
+                content: data.content,
+                priority: data.priority,
+                assignedUserId: data.assignedUserId,
+            };
+
+            if (isNew) {
+                createTask(
+                    { ...commonData, projectId: projectId || '' },
+                    {
+                        onSuccess: () => {
+                            navigate(`/projects/${projectId}`);
+                            client.invalidateQueries({ queryKey: [queryKeys.projectBoard, projectId] });
+                        },
+                    }
+                );
+            } else {
+                updateTask(
+                    { ...commonData, taskId: taskId as string },
+                    {
+                        onSuccess: () => {
+                            navigate(`/projects/${projectId}`);
+                            client.invalidateQueries({ queryKey: [queryKeys.taskDetails, taskId] });
+                            client.invalidateQueries({ queryKey: [queryKeys.projectBoard, projectId] });
+                        },
+                    }
+                );
+            }
+        },
+        [isNew, isEditMode, taskId, projectId]
+    );
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+        <Dialog open onClose={() => navigate(-1)} fullWidth maxWidth="md">
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <DialogContent sx={{ height: '80vh' }}>
-                        <EditForm projectId={projectId} />
+                    <DialogContent sx={{ height: 'fit-content' }}>
+                        {isEditMode ? <EditForm /> : <DisplayTask />}
                     </DialogContent>
+                    <DialogActions>
+                        <Box sx={{ width: '100%' }}>
+                            <If condition={isEditMode}>
+                                <Then>
+                                    <Button type="submit" variant="contained">
+                                        Zapisz
+                                    </Button>
+                                </Then>
+                                <Else>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => navigate(`/projects/${projectId}/task/${taskId}/1`)}
+                                    >
+                                        Edytuj
+                                    </Button>
+                                </Else>
+                            </If>
+
+                            <Button type="submit" variant="text" onClick={() => navigate(-1)}>
+                                Anuluj
+                            </Button>
+                        </Box>
+                    </DialogActions>
                 </form>
             </FormProvider>
         </Dialog>

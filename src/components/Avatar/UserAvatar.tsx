@@ -29,16 +29,17 @@ function UserAvatar({ firstName, lastName, size = 'medium', ...props }: UserAvat
     ];
 
     const colorIndex = (firstAscii + lastAscii) % colors.length;
+    const hasName = Boolean(firstLetter || lastLetter);
 
     return (
         <Avatar
             {...props}
             sx={{
-                bgcolor: colors[colorIndex],
+                bgcolor: hasName ? colors[colorIndex] : '#9e9e9e',
                 ...props.sx,
             }}
             className={clsx(props.className, size === 'small' && 'w-[24px] h-[24px] text-xs')}
-            children={firstLetter || lastLetter ? `${firstLetter}${lastLetter}` : undefined}
+            children={hasName ? `${firstLetter}${lastLetter}` : undefined}
         />
     );
 }
