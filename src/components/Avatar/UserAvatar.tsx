@@ -1,7 +1,6 @@
 import { Avatar, AvatarProps } from '@mui/material';
 import { memo } from 'react';
 import { toUpper } from 'lodash';
-import clsx from 'clsx';
 
 export interface UserAvatarProps extends AvatarProps {
     firstName?: string;
@@ -31,14 +30,16 @@ function UserAvatar({ firstName, lastName, size = 'medium', ...props }: UserAvat
     const colorIndex = (firstAscii + lastAscii) % colors.length;
     const hasName = Boolean(firstLetter || lastLetter);
 
+    const sizeStyles = size === 'small' ? { width: 24, height: 24, fontSize: '0.75rem' } : {};
+
     return (
         <Avatar
             {...props}
             sx={{
                 bgcolor: hasName ? colors[colorIndex] : '#9e9e9e',
+                ...sizeStyles,
                 ...props.sx,
             }}
-            className={clsx(props.className, size === 'small' && 'w-[24px] h-[24px] text-xs')}
             children={hasName ? `${firstLetter}${lastLetter}` : undefined}
         />
     );

@@ -1,4 +1,16 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, MenuItem, Stack, Typography } from '@mui/material';
+import {
+    Box,
+    Button,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    Divider,
+    MenuItem,
+    Paper,
+    Stack,
+    Typography,
+} from '@mui/material';
 import { FormProvider, useForm, Controller, useFormContext } from 'react-hook-form';
 import { useCallback, useEffect, useMemo } from 'react';
 import * as yup from 'yup';
@@ -16,7 +28,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/constants/queryKeys';
 import { TaskPriority } from '@/constants/domain';
 import { PriorityLabel } from '@/components/Kanban/PriorityLabel';
-import { components } from '@/types/apiSchema';
 import useTaskDetailsQuery from '@/hooks/queries/useTaskDetailsQuery';
 import { useNavigate, useParams } from 'react-router-dom';
 import useUpdateTaskMutation from '@/hooks/mutations/useUpdateTaskMutation';
@@ -31,6 +42,7 @@ interface FormInput {
     organizationId: string;
     assignedUserId: string;
     assignedUserName: string;
+    code: string;
 }
 
 function EditForm() {
@@ -103,9 +115,70 @@ function EditForm() {
 
 function DisplayTask() {
     const methods = useFormContext<FormInput>();
+    const { id: projectId } = useParams();
+    const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
     const { getValues } = methods;
+    const taskColumn = columns?.find((column) => column.id === getValues('columnId'));
 
-    return <div>dupa</div>;
+    return (
+        <>
+            <Stack px={2}>
+                <Typography>{getValues('code')}</Typography>
+                <Typography variant="h5">{getValues('name')}</Typography>
+            </Stack>
+            <Stack direction="row" p={2} spacing={2} sx={{ height: '100%', minHeight: '40vh' }}>
+                <Stack flex={5}>
+                    <Paper sx={{ p: 2, height: '100%' }} elevation={0} variant="outlined">
+                        <Stack spacing={2}>
+                            <Typography
+                                dangerouslySetInnerHTML={{ __html: getValues('content') }}
+                                sx={{
+                                    '& img': { maxWidth: '100%', height: 'auto' },
+                                    '& a': { color: 'primary.main' },
+                                    '& ul, & ol': { paddingLeft: 4 },
+                                    '& ul': { listStyleType: 'disc' },
+                                    '& ol': { listStyleType: 'decimal' },
+                                }}
+                            />
+                        </Stack>
+                    </Paper>
+                </Stack>
+                <Stack flex={2}>
+                    <Paper sx={{ p: 2, height: '100%' }} elevation={0} variant="outlined">
+                        <Stack spacing={2}>
+                            <Stack>
+                                <Typography fontWeight={500} variant="caption">
+                                    Przydzielony do
+                                </Typography>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <UserAvatar firstName={getValues('assignedUserName')} size="small" />
+                                    {getValues('assignedUserName') ? (
+                                        <Typography>{getValues('assignedUserName')}</Typography>
+                                    ) : (
+                                        <Typography>Nie przypisano</Typography>
+                                    )}
+                                </Stack>
+                            </Stack>
+
+                            <Stack>
+                                <Typography variant="caption" fontWeight={500}>
+                                    Priorytet
+                                </Typography>
+                                <PriorityLabel priority={getValues('priority')} />
+                            </Stack>
+
+                            <Stack>
+                                <Typography variant="caption" fontWeight={500}>
+                                    Status
+                                </Typography>
+                                <Chip label={taskColumn?.name || ''} color="primary" sx={{ width: 'max-content' }} />
+                            </Stack>
+                        </Stack>
+                    </Paper>
+                </Stack>
+            </Stack>
+        </>
+    );
 }
 
 function TaskDialog() {
@@ -146,6 +219,7 @@ function TaskDialog() {
             organizationId: projectDetails?.organizationId || task?.organizationId || '',
             assignedUserId: task?.assignedUser?.id || '',
             assignedUserName: (task?.assignedUser?.name as string) || '',
+            code: task?.code || '',
         });
     }, [task, columns]);
 
@@ -174,7 +248,7 @@ function TaskDialog() {
                     { ...commonData, taskId: taskId as string },
                     {
                         onSuccess: () => {
-                            navigate(`/projects/${projectId}`);
+                            navigate(`/projects/${projectId}/task/${taskId}/0`);
                             client.invalidateQueries({ queryKey: [queryKeys.taskDetails, taskId] });
                             client.invalidateQueries({ queryKey: [queryKeys.projectBoard, projectId] });
                         },
@@ -189,10 +263,10 @@ function TaskDialog() {
         <Dialog open onClose={() => navigate(-1)} fullWidth maxWidth="md">
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <DialogContent sx={{ height: 'fit-content' }}>
+                    <DialogContent sx={{ minHeight: '40vh' }}>
                         {isEditMode ? <EditForm /> : <DisplayTask />}
                     </DialogContent>
-                    <DialogActions>
+                    <DialogActions sx={{ py: 2, px: 5 }}>
                         <Box sx={{ width: '100%' }}>
                             <If condition={isEditMode}>
                                 <Then>
@@ -209,7 +283,6 @@ function TaskDialog() {
                                     </Button>
                                 </Else>
                             </If>
-
                             <Button type="submit" variant="text" onClick={() => navigate(-1)}>
                                 Anuluj
                             </Button>
