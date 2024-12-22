@@ -131,6 +131,7 @@ export interface components {
       assignedUser: components["schemas"]["TaskAssignedUserDto"];
       priority: string;
       aboveTaskId: Record<string, never>;
+      isBacklog: boolean;
     };
     ProjectColumnWithTasksDto: {
       id: string;
@@ -158,6 +159,7 @@ export interface components {
       assignedUser: components["schemas"]["TaskAssignedUserDto"];
       priority: string;
       aboveTaskId: Record<string, never>;
+      isBacklog: boolean;
       content: string;
       columnId: string;
       organizationId: string;

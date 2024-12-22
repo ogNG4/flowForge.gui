@@ -2,7 +2,7 @@ import { useProjectBoardQuery, useBacklogTasksQuery } from '@/hooks';
 import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from '@/components/Table/DataTable';
 import { GridColDef } from '@mui/x-data-grid';
-import { Stack, Typography, Divider, Chip } from '@mui/material';
+import { Stack, Typography, Divider, Chip, Button } from '@mui/material';
 import { useMemo } from 'react';
 import SearchInput from '@/components/Form/SearchInput';
 import { useSearchValue } from '@/hooks';
@@ -18,13 +18,23 @@ export default function ProjectBacklog() {
 
     const columns: GridColDef[] = useMemo(
         () => [
-            { field: 'code', headerName: 'Kod', width: 130 },
+            {
+                field: 'code',
+                headerName: 'Kod',
+                width: 130,
+                renderCell: (params) => <span style={{ fontWeight: 'bold' }}>{params.value}</span>,
+            },
             { field: 'name', headerName: 'Nazwa', flex: 1 },
             {
                 field: 'status',
                 headerName: 'Status',
                 width: 130,
-                renderCell: (params) => <Chip label={params.value} size="small" color="primary" variant="outlined" />,
+                renderCell: (params) => {
+                    if (!params.row.isBacklog) {
+                        return <Chip label={params.value} size="small" color="primary" variant="outlined" />;
+                    }
+                    return null;
+                },
             },
             {
                 field: 'priority',
@@ -95,9 +105,19 @@ export default function ProjectBacklog() {
         navigate(`/projects/${id}/task/${taskId}/0`);
     };
 
+    const handleCreateTaskNavigate = () => {
+        navigate(`/projects/${id}/task/0/1`, { state: { isBacklog: true } });
+    };
+
     return (
         <Stack className="p-4 gap-4">
-            <SearchInput searchValue={searchValue} setSearchValue={setSearchValue} />
+            <Stack direction="row" alignItems="center" spacing={1}>
+                <SearchInput searchValue={searchValue} setSearchValue={setSearchValue} />
+                <Button variant="contained" color="primary" onClick={() => handleCreateTaskNavigate()}>
+                    {' '}
+                    Dodaj Zadanie
+                </Button>
+            </Stack>
 
             <Stack>
                 <Typography variant="h6" className="mb-2">

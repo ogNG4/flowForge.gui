@@ -31,12 +31,13 @@ import queryKeys from '@/constants/queryKeys';
 import { TaskPriority } from '@/constants/domain';
 import { PriorityLabel } from '@/components/Kanban/PriorityLabel';
 import useTaskDetailsQuery from '@/hooks/queries/useTaskDetailsQuery';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import useUpdateTaskMutation from '@/hooks/mutations/useUpdateTaskMutation';
 import UserAvatar from '@/components/Avatar/UserAvatar';
 import { Else, If, Then } from 'react-if';
 import { isValidTimeFormat, minutesToTimeString, timeStringToMinutes } from '@/utils/common';
 import TimeLogDialog from './TimeLogDialog';
+import CheckboxInput from '@/components/Form/CheckboxInput';
 
 interface FormInput {
     name: string;
@@ -49,10 +50,13 @@ interface FormInput {
     code: string;
     estimatedTime: string;
     totalTimeSpent: number;
+    isBacklog: boolean;
 }
 
 function EditForm() {
-    const { id: projectId } = useParams();
+    const { id: projectId, taskId, edit } = useParams();
+    const isNew = taskId === '0';
+    const isEditMode = edit === '1';
     const { data: columns } = useGetProjectColumnsQuery({ projectId: projectId as string });
     const methods = useFormContext<FormInput>();
     const { getValues } = methods;
@@ -117,6 +121,8 @@ function EditForm() {
                     ))}
                 </SelectInput>
                 <TextInput<FormInput> name="estimatedTime" label="Czas estymowany" />
+
+                {isNew && <CheckboxInput name="isBacklog" label="Dodaj do backlogu" />}
             </Stack>
         </Stack>
     );
@@ -215,6 +221,7 @@ function DisplayTask() {
 
 function TaskDialog() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { taskId, id: projectId, edit } = useParams();
     const isNew = taskId === '0';
     const isEditMode = edit === '1';
@@ -258,8 +265,9 @@ function TaskDialog() {
             code: task?.code || '',
             estimatedTime: minutesToTimeString(task?.estimatedTime || 0),
             totalTimeSpent: task?.totalTimeSpent,
+            isBacklog: location.state?.isBacklog || task?.isBacklog || false,
         });
-    }, [task, columns]);
+    }, [task, columns, location.state]);
 
     const onSubmit = useCallback(
         async (data: FormInput) => {
@@ -274,11 +282,12 @@ function TaskDialog() {
 
             if (isNew) {
                 createTask(
-                    { ...commonData, projectId: projectId || '' },
+                    { ...commonData, projectId: projectId || '', isBacklog: data.isBacklog },
                     {
                         onSuccess: () => {
                             navigate(`/projects/${projectId}`);
                             client.invalidateQueries({ queryKey: [queryKeys.projectBoard, projectId] });
+                            client.invalidateQueries({ queryKey: [queryKeys.projectBacklogTasks, projectId] });
                         },
                     }
                 );
@@ -290,6 +299,7 @@ function TaskDialog() {
                             navigate(`/projects/${projectId}/task/${taskId}/0`);
                             client.invalidateQueries({ queryKey: [queryKeys.taskDetails, taskId] });
                             client.invalidateQueries({ queryKey: [queryKeys.projectBoard, projectId] });
+                            client.invalidateQueries({ queryKey: [queryKeys.projectBacklogTasks, projectId] });
                         },
                     }
                 );

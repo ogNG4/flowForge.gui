@@ -23,7 +23,7 @@ export default function ProjectDetails() {
     const columns = projectBoard?.columns.sort((a, b) => a.order - b.order);
     const { mutate: updateTaskColumn } = useUpdateTaskColumnMutation();
     const { searchValue: tasksSearchValue, setSearchValue: setTasksSearchValue } = useSearchValue();
-    const { searchValue: assigneeSearchValue, setSearchValue: setAssigneeSearchValue } = useSearchValue('');
+    const { searchValue: assigneeSearchValue, setSearchValue: setAssigneeSearchValue } = useSearchValue();
     const { data: organizationMembers } = useOrganizationMembersQuery(
         {
             organizationId: projectBoard?.organizationId as string,
