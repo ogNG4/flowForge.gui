@@ -21,3 +21,4 @@ export { default as useUserProjectsQuery } from './queries/useUserProjectsQuery'
 export { default as useProjectBoardQuery } from './queries/useProjectBoardQuery';
 export { default as useGetProjectColumnsQuery } from './queries/useGetProjectColumnsQuery';
 export { default as useProjectDetailsQuery } from './queries/useProjectDetailsQuery';
+export { default as useBacklogTasksQuery } from './queries/useBacklogTasksQuery';

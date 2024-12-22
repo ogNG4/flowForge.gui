@@ -7,12 +7,7 @@ interface SearchInputProps {
 
 function SearchInput({ searchValue, setSearchValue }: SearchInputProps) {
     return (
-        <TextField
-            size="small"
-            placeholder="Szukaj"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-        />
+        <TextField size="small" label="Szukaj" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
     );
 }
 

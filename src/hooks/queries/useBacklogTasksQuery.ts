@@ -5,23 +5,23 @@ import { UseQueryOptions, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { replace } from 'lodash';
 
-const path: keyof paths = '/organization-member/{organizationId}';
+const path: keyof paths = '/project-task/{projectId}/backlog';
 type MutationPath = paths[typeof path]['get'];
-type Response = MutationPath['responses']['200']['content']['application/json'];
 type RequestParams = MutationPath['parameters']['path'];
+type Response = MutationPath['responses']['200']['content']['application/json'];
 
-const get = async (params: RequestParams) => {
-    const { data } = await api.getClient().get(replace(path, '{organizationId}', params.organizationId));
+const get = async ({ projectId }: RequestParams) => {
+    const { data } = await api.getClient().get(replace(path, '{projectId}', projectId));
     return data;
 };
 
-export default function useOrganizationMembersQuery(
+export default function useTaskDetailsQuery(
     params: RequestParams,
     options?: Omit<UseQueryOptions<Response, AxiosError, Response>, 'queryKey' | 'queryFn'>
 ) {
     return useQuery<Response, AxiosError, Response>({
         ...options,
-        queryKey: [queryKeys.organizationMembers, params.organizationId],
+        queryKey: [queryKeys.projectBacklogTasks, params.projectId],
         queryFn: () => get(params),
     });
 }

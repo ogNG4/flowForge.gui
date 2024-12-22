@@ -2,14 +2,12 @@ import { List, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/ma
 import { grey } from '@mui/material/colors';
 import clsx from 'clsx';
 import { memo } from 'react';
-import { useLocalStorage } from 'react-use';
-import MenuIcon from '@mui/icons-material/Menu';
-import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import { useTranslation } from 'react-i18next';
-import { Else, If, Then, When } from 'react-if';
+import { useNavigate } from 'react-router-dom';
+import useMenu from '@/hooks/useMenu';
 
 function Sidebar() {
-    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const { projectMenu, activeProjectMenu } = useMenu();
 
     return (
         <Stack
@@ -21,7 +19,18 @@ function Sidebar() {
             )}
             sx={{ borderRight: `1px solid ${grey[300]}` }}
         >
-            <List></List>
+            <List>
+                {projectMenu.map((item) => (
+                    <ListItemButton
+                        key={item.path}
+                        onClick={() => navigate(item.path)}
+                        selected={activeProjectMenu?.path === item.path}
+                    >
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        <ListItemText primary={item.name} />
+                    </ListItemButton>
+                ))}
+            </List>
         </Stack>
     );
 }

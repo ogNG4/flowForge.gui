@@ -7,4 +7,5 @@ export default {
     projectColumns: 'projectColumns',
     taskDetails: 'taskDetails',
     projectDetails: 'projectDetails',
+    projectBacklogTasks: 'projectBacklogTasks',
 };

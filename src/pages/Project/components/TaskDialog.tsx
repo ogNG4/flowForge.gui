@@ -47,7 +47,7 @@ interface FormInput {
     assignedUserId: string;
     assignedUserName: string;
     code: string;
-    estimatedTime: number;
+    estimatedTime: string;
     totalTimeSpent: number;
 }
 
@@ -74,7 +74,7 @@ function EditForm() {
                         name="content"
                         control={methods.control}
                         render={({ field }) => (
-                            <Editor defaultValue={field.value || ''} onTextChange={field.onChange} />
+                            <Editor defaultValue={field.value?.toString() || ''} onTextChange={field.onChange} />
                         )}
                     />
                 </Stack>
@@ -158,6 +158,18 @@ function DisplayTask() {
                     <Paper sx={{ p: 2, height: '100%' }} elevation={0} variant="outlined">
                         <Stack spacing={2}>
                             <Stack>
+                                <Typography variant="caption" fontWeight={500}>
+                                    Status
+                                </Typography>
+                                <Chip label={taskColumn?.name || ''} color="primary" sx={{ width: 'max-content' }} />
+                            </Stack>
+                            <Stack>
+                                <Typography variant="caption" fontWeight={500}>
+                                    Priorytet
+                                </Typography>
+                                <PriorityLabel priority={getValues('priority')} />
+                            </Stack>
+                            <Stack>
                                 <Typography fontWeight={500} variant="caption">
                                     Przydzielony do
                                 </Typography>
@@ -173,32 +185,21 @@ function DisplayTask() {
 
                             <Stack>
                                 <Typography variant="caption" fontWeight={500}>
-                                    Priorytet
-                                </Typography>
-                                <PriorityLabel priority={getValues('priority')} />
-                            </Stack>
-
-                            <Stack>
-                                <Typography variant="caption" fontWeight={500}>
-                                    Status
-                                </Typography>
-                                <Chip label={taskColumn?.name || ''} color="primary" sx={{ width: 'max-content' }} />
-                            </Stack>
-                            <Stack>
-                                <Typography variant="caption" fontWeight={500}>
                                     Czas pracy
                                 </Typography>
                                 <LinearProgress
                                     variant="determinate"
                                     value={Math.min(
-                                        (getValues('totalTimeSpent') / getValues('estimatedTime')) * 100,
+                                        (getValues('totalTimeSpent') /
+                                            timeStringToMinutes(getValues('estimatedTime'))) *
+                                            100,
                                         100
                                     )}
                                     sx={{ height: 10, borderRadius: 10 }}
                                 />
                                 <Typography variant="caption">
                                     {minutesToTimeString(getValues('totalTimeSpent'))} /{' '}
-                                    {minutesToTimeString(getValues('estimatedTime'))}
+                                    {minutesToTimeString(timeStringToMinutes(getValues('estimatedTime')))}
                                 </Typography>
                             </Stack>
                             <Button variant="outlined" onClick={handleOpen}>
@@ -255,7 +256,7 @@ function TaskDialog() {
             assignedUserId: task?.assignedUser?.id || '',
             assignedUserName: (task?.assignedUser?.name as string) || '',
             code: task?.code || '',
-            estimatedTime: task?.estimatedTime || 0,
+            estimatedTime: minutesToTimeString(task?.estimatedTime || 0),
             totalTimeSpent: task?.totalTimeSpent,
         });
     }, [task, columns]);

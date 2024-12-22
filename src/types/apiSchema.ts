@@ -49,6 +49,9 @@ export interface paths {
   "/project-task/{taskId}": {
     get: operations["ProjectTaskController_getTaskDetails"];
   };
+  "/project-task/{projectId}/backlog": {
+    get: operations["ProjectTaskController_getBacklogByProjectId"];
+  };
   "/project-task": {
     put: operations["ProjectTaskController_updateTask"];
     post: operations["ProjectTaskController_createTask"];
@@ -137,6 +140,7 @@ export interface components {
     };
     ProjectBoardDto: {
       columns: components["schemas"]["ProjectColumnWithTasksDto"][];
+      organizationId: string;
     };
     ProjectColumnDto: {
       id: string;
@@ -169,6 +173,7 @@ export interface components {
       priority: string;
       assignedUserId?: string;
       estimatedTime?: number;
+      isBacklog?: boolean;
     };
     UpdateTaskColumnInputDto: {
       taskId: string;
@@ -408,6 +413,21 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["TaskDetailsDto"];
+        };
+      };
+    };
+  };
+  ProjectTaskController_getBacklogByProjectId: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get backlog by project id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BoardTaskDto"][];
         };
       };
     };
