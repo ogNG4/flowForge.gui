@@ -1,4 +1,4 @@
-import { Button, Stack, Select, MenuItem, Typography } from '@mui/material';
+import { Button, Stack, Select, MenuItem, Typography, IconButton } from '@mui/material';
 import { Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
 import Column from './components/Column';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
@@ -17,6 +17,8 @@ import SearchInput from '@/components/Form/SearchInput';
 import UserAvatar from '@/components/Avatar/UserAvatar';
 import { formatDate } from '@/utils/common';
 import SprintDialog from './components/SprintDialog';
+import AddIcon from '@mui/icons-material/Add';
+import CreateColumnDialog from './components/CreateColumnDialog';
 
 export default function ProjectDetails() {
     const { id } = useParams();
@@ -42,6 +44,7 @@ export default function ProjectDetails() {
         }
     );
     const { data: activeSprint } = useActiveSprintQuery({ projectId: id as string });
+    const { open, handleOpen, handleClose } = useModal();
 
     const filteredColumns = useMemo(() => {
         if (!columns) return [];
@@ -153,9 +156,25 @@ export default function ProjectDetails() {
                     </Stack>
                     <DndContext onDragEnd={handleDragEnd}>
                         <Stack direction="row" className="gap-3 flex-1">
+                            <CreateColumnDialog open={open} onClose={handleClose} projectId={id as string} />
                             {filteredColumns?.map((column) => (
                                 <Column key={column.id} id={column.id} name={column.name} tasks={column.tasks} />
                             ))}
+                            <IconButton
+                                onClick={handleOpen}
+                                sx={{
+                                    width: 40,
+                                    height: 40,
+                                    alignSelf: 'flex-start',
+                                    backgroundColor: 'primary.main',
+                                    color: 'white',
+                                    '&:hover': {
+                                        backgroundColor: 'primary.dark',
+                                    },
+                                }}
+                            >
+                                <AddIcon />
+                            </IconButton>
                         </Stack>
                     </DndContext>
                 </Stack>

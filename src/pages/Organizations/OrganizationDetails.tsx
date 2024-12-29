@@ -30,6 +30,7 @@ interface MemberFormInput {
 interface ProjectFormInput {
     name: string;
     code: string;
+    description: string;
 }
 
 interface MemberFormProps {
@@ -104,6 +105,7 @@ function ProjectForm({ open, onClose, onSubmit, isLoading }: ProjectFormProps) {
         return yup.object().shape({
             name: yup.string().required('Nazwa jest wymagana.'),
             code: yup.string().required('Kod jest wymagany'),
+            description: yup.string().max(255, 'Opis nie może mieć więcej niż 255 znaków.'),
         });
     }, []);
 
@@ -148,6 +150,7 @@ function ProjectForm({ open, onClose, onSubmit, isLoading }: ProjectFormProps) {
                     <Stack spacing={2}>
                         <TextInput<ProjectFormInput> name="name" label="Nazwa" />
                         <TextInput<ProjectFormInput> name="code" label="Kod" />
+                        <TextInput<ProjectFormInput> name="description" label="Opis" multiline rows={4} />
                     </Stack>
                 </DialogContent>
                 <DialogActions>

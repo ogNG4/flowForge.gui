@@ -71,6 +71,15 @@ export interface paths {
   "/project-sprint/active/{projectId}": {
     get: operations["ProjectSprintController_getActiveSprint"];
   };
+  "/project/column/{projectId}": {
+    get: operations["ProjectColumnController_getColumnsByProjectId"];
+  };
+  "/project/column": {
+    post: operations["ProjectColumnController_createColumn"];
+  };
+  "/project/column/order": {
+    put: operations["ProjectColumnController_updateColumnsOrder"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -122,6 +131,7 @@ export interface components {
       name: string;
       code: string;
       organizationId: string;
+      description: string | null;
     };
     ProjectDto: {
       id: string;
@@ -252,6 +262,17 @@ export interface components {
       /** Format: date-time */
       endDate: string;
       isActive: boolean;
+    };
+    CreateProjectColumnInputDto: {
+      name: string;
+      previousColumnId: string | null;
+      projectId: string;
+    };
+    UpdateColumnsOrderInputDto: {
+      columns: {
+        id?: string;
+        order?: number;
+      };
     };
   };
   responses: never;
@@ -579,6 +600,47 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["SprintDto"];
         };
+      };
+    };
+  };
+  ProjectColumnController_getColumnsByProjectId: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get all columns by project id */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectColumnDto"][];
+        };
+      };
+    };
+  };
+  ProjectColumnController_createColumn: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateProjectColumnInputDto"];
+      };
+    };
+    responses: {
+      /** @description Create a column for a project */
+      200: {
+        content: never;
+      };
+    };
+  };
+  ProjectColumnController_updateColumnsOrder: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateColumnsOrderInputDto"];
+      };
+    };
+    responses: {
+      /** @description Update columns order */
+      200: {
+        content: never;
       };
     };
   };

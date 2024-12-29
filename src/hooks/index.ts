@@ -14,6 +14,8 @@ export { default as useCreateTaskMutation } from './mutations/useCreateTaskMutat
 export { default as useUpdateTaskColumnMutation } from './mutations/useUpdateTaskColumnMutation';
 export { default as useAddTimeLogMutation } from './mutations/useAddTimeLogMutation';
 export { default as useCreateSprintMutation } from './mutations/useCreateSprintMutation';
+export { default as useCreateColumnMutation } from './mutations/useCreateColumnMutation';
+export { default as useUpdateColumnsOrderMutation } from './mutations/useUpdateColumnsOrderMutation';
 
 export { default as useUserOrganizationsQuery } from './queries/useUserOrganizationsQuery';
 export { default as useOrganizationMembersQuery } from './queries/useOrganizationMembersQuery';
