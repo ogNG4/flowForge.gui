@@ -13,6 +13,7 @@ export { default as useCreateProjectMutation } from './mutations/useCreateProjec
 export { default as useCreateTaskMutation } from './mutations/useCreateTaskMutation';
 export { default as useUpdateTaskColumnMutation } from './mutations/useUpdateTaskColumnMutation';
 export { default as useAddTimeLogMutation } from './mutations/useAddTimeLogMutation';
+export { default as useCreateSprintMutation } from './mutations/useCreateSprintMutation';
 
 export { default as useUserOrganizationsQuery } from './queries/useUserOrganizationsQuery';
 export { default as useOrganizationMembersQuery } from './queries/useOrganizationMembersQuery';
@@ -22,3 +23,5 @@ export { default as useProjectBoardQuery } from './queries/useProjectBoardQuery'
 export { default as useGetProjectColumnsQuery } from './queries/useGetProjectColumnsQuery';
 export { default as useProjectDetailsQuery } from './queries/useProjectDetailsQuery';
 export { default as useBacklogTasksQuery } from './queries/useBacklogTasksQuery';
+export { default as useActiveSprintQuery } from './queries/useActiveSprintQuery';
+export { default as useProjectTimeDetailsQuery } from './queries/useProjectTimeDetailsQuery';

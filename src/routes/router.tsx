@@ -27,6 +27,7 @@ export const ProjectsPage = React.lazy(() => import('@/pages/Project/Projects'))
 export const ProjectDetailsPage = React.lazy(() => import('@/pages/Project/ProjectDetails'));
 export const DetailTaskDialog = React.lazy(() => import('@/pages/Project/components/TaskDialog'));
 export const ProjectBacklogPage = React.lazy(() => import('@/pages/Project/ProjectBacklog'));
+export const ProjectTimeDetailsPage = React.lazy(() => import('@/pages/Project/ProjectTimeDetails'));
 
 const routeProps = {
     loader: protectedLoader,
@@ -51,6 +52,7 @@ export const routeList: RouteObject[] = [
                 children: [
                     { ...routeProps, path: 'task/:taskId/:edit', element: <DetailTaskDialog /> },
                     { ...routeProps, path: 'backlog', element: <ProjectBacklogPage /> },
+                    { ...routeProps, path: 'time-details', element: <ProjectTimeDetailsPage /> },
                 ],
             },
             // { ...routeProps, path: 'projects/:projectId/task/:taskId', element: <DetailTaskDialog /> },

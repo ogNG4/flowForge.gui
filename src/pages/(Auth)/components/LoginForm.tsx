@@ -8,6 +8,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import TextInput from '@/components/Form/TextInput';
 import LoadingButton from '@/components/Button/LoadingButton';
 import { useNavigate } from 'react-router-dom';
+import UserAvatar from '@/components/Avatar/UserAvatar';
 
 interface FormInput {
     email: string;
@@ -59,6 +60,9 @@ function LoginForm() {
         <>
             <FormProvider {...methods}>
                 <Stack component="form" spacing={2} onSubmit={handleSubmit(handleSave)} className="w-1/5 max-w-[450px]">
+                    <Stack direction="row" spacing={2} w={'100%'} alignItems="center" justifyContent="center">
+                        <UserAvatar />
+                    </Stack>
                     <TextInput<FormInput> name="email" label={t('Email')} />
                     <TextInput<FormInput> name="password" type="password" label={t('Hasło')} />
                     <Stack direction="row" className="justify-between">

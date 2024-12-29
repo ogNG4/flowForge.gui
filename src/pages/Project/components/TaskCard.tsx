@@ -46,7 +46,7 @@ export default function TaskCard({ task }: TaskCardProps) {
             style={style}
             {...listeners}
             {...attributes}
-            className="p-2 rounded-sm h-fit w-full relative"
+            className="p-2 rounded-md h-fit w-full relative "
             onMouseUp={(e) => {
                 if (!isDragging) {
                     handleClick(e as React.MouseEvent);

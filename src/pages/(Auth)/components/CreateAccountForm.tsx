@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Stack } from '@mui/material';
+import UserAvatar from '@/components/Avatar/UserAvatar';
 
 interface FormInput {
     email: string;
@@ -71,18 +72,21 @@ function CreateAccountForm() {
     return (
         <FormProvider {...methods}>
             <Stack component="form" spacing={2} onSubmit={handleSubmit(handleSave)} className="w-1/5 max-w-[450px]">
+                <Stack direction="row" spacing={2} w={'100%'} alignItems="center" justifyContent="center">
+                    <UserAvatar />
+                </Stack>
                 <TextInput<FormInput> name="email" placeholder={t('Email')} />
-                <TextInput<FormInput> type={show ? 'text' : 'password'} name="password" placeholder={t('Password')} />
+                <TextInput<FormInput> type={show ? 'text' : 'password'} name="password" placeholder={t('Hasło')} />
                 <TextInput<FormInput>
                     type={show ? 'text' : 'password'}
                     name="repeatPassword"
-                    placeholder={t('Repeat password')}
+                    placeholder={t('Powtórz hasło')}
                 />
-                <TextInput<FormInput> name="firstName" placeholder={t('First name')} />
-                <TextInput<FormInput> name="lastName" placeholder={t('Last name')} />
+                <TextInput<FormInput> name="firstName" placeholder={t('Imię')} />
+                <TextInput<FormInput> name="lastName" placeholder={t('Nazwisko')} />
 
                 <LoadingButton type="submit" variant="contained">
-                    {t('Login')}
+                    {t('Zarejestruj się')}
                 </LoadingButton>
             </Stack>
         </FormProvider>

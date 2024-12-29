@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 
 function BaseLayout() {
     const location = useLocation();
-    const showSidebar = location.pathname.startsWith('/project');
+    const showSidebar = location.pathname.startsWith('/projects/');
 
     return (
         <Stack direction="row" className="h-screen" sx={{ backgroundColor: grey[50] }}>

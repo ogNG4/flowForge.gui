@@ -2,6 +2,7 @@ import { ReactElement, useMemo } from 'react';
 import { compact, find } from 'lodash';
 import CorporateFareOutlined from '@mui/icons-material/CorporateFareOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import BacklogIcon from '@mui/icons-material/FormatListBulleted';
 import { useParams, useLocation } from 'react-router-dom';
 
@@ -44,6 +45,11 @@ function useMenu() {
                     name: 'Backlog',
                     path: `/projects/${id}/backlog`,
                     icon: <BacklogIcon />,
+                },
+                {
+                    name: 'Czas pracy',
+                    path: `/projects/${id}/time-details`,
+                    icon: <AccessTimeIcon />,
                 },
             ]),
         [id]

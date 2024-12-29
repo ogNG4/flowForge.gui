@@ -8,4 +8,6 @@ export default {
     taskDetails: 'taskDetails',
     projectDetails: 'projectDetails',
     projectBacklogTasks: 'projectBacklogTasks',
+    activeSprint: 'activeSprint',
+    projectTimeDetails: 'projectTimeDetails',
 };

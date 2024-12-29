@@ -20,12 +20,7 @@ export const timeStringToMinutes = (timeString: string): number => {
     const hours = parseInt(matches[3] || '0');
     const minutes = parseInt(matches[4] || '0');
 
-    return (
-        weeks * 5 * 8 * 60 + // zakładamy 5 dni roboczych w tygodniu, 8h dziennie
-        days * 8 * 60 + // 8h dziennie
-        hours * 60 +
-        minutes
-    );
+    return weeks * 5 * 8 * 60 + days * 8 * 60 + hours * 60 + minutes;
 };
 
 export const minutesToTimeString = (minutes: number): string => {

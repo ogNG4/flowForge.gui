@@ -4,15 +4,19 @@ import Column from './components/Column';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useMemo } from 'react';
 import {
+    useActiveSprintQuery,
     useOrganizationMembersQuery,
     useProjectBoardQuery,
     useSearchValue,
     useUpdateTaskColumnMutation,
+    useModal,
 } from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/constants/queryKeys';
 import SearchInput from '@/components/Form/SearchInput';
 import UserAvatar from '@/components/Avatar/UserAvatar';
+import { formatDate } from '@/utils/common';
+import SprintDialog from './components/SprintDialog';
 
 export default function ProjectDetails() {
     const { id } = useParams();
@@ -24,6 +28,11 @@ export default function ProjectDetails() {
     const { mutate: updateTaskColumn } = useUpdateTaskColumnMutation();
     const { searchValue: tasksSearchValue, setSearchValue: setTasksSearchValue } = useSearchValue();
     const { searchValue: assigneeSearchValue, setSearchValue: setAssigneeSearchValue } = useSearchValue();
+    const {
+        handleOpen: handleOpenSprintDialog,
+        handleClose: handleCloseSprintDialog,
+        open: openSprintDialog,
+    } = useModal();
     const { data: organizationMembers } = useOrganizationMembersQuery(
         {
             organizationId: projectBoard?.organizationId as string,
@@ -32,6 +41,7 @@ export default function ProjectDetails() {
             enabled: !!projectBoard?.organizationId,
         }
     );
+    const { data: activeSprint } = useActiveSprintQuery({ projectId: id as string });
 
     const filteredColumns = useMemo(() => {
         if (!columns) return [];
@@ -84,9 +94,33 @@ export default function ProjectDetails() {
 
     return (
         <>
+            <SprintDialog
+                open={openSprintDialog}
+                onClose={handleCloseSprintDialog}
+                projectId={id as string}
+                currentSprint={activeSprint}
+            />
             <Outlet />
             {showBoard && (
                 <Stack className="gap-2 h-screen">
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Stack>
+                            <Typography variant="body1">{projectBoard?.name}</Typography>
+                            <Stack direction="row" alignItems="center" gap={1}>
+                                <Typography variant="h5">Sprint {activeSprint?.number}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    {formatDate(activeSprint?.startDate || '', 'DD.MM.YYYY')} -{' '}
+                                    {formatDate(activeSprint?.endDate || '', 'DD.MM.YYYY')}
+                                </Typography>
+                            </Stack>
+                            <Typography variant="caption" color="text.secondary">
+                                {activeSprint?.goal}
+                            </Typography>
+                        </Stack>
+                        <Button onClick={handleOpenSprintDialog} variant="contained">
+                            Zakoncz sprint
+                        </Button>
+                    </Stack>
                     <Stack direction="row" className="gap-2">
                         <SearchInput searchValue={tasksSearchValue} setSearchValue={setTasksSearchValue} />
                         <Select

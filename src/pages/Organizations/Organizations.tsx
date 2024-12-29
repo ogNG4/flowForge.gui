@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface FormInput {
     name: string;
+    description: string;
 }
 
 function Organizations() {
@@ -31,6 +32,7 @@ function Organizations() {
                 .required('Nazwa jest wymagana.')
                 .min(3, 'Nazwa musi mieć co najmniej 3 znaki.')
                 .max(50, 'Nazwa nie może mieć więcej niż 50 znaków.'),
+            description: yup.string().max(255, 'Opis nie może mieć więcej niż 255 znaków.'),
         };
 
         return yup.object().shape(schema);
@@ -42,7 +44,7 @@ function Organizations() {
     const { handleSubmit, reset } = methods;
 
     const onSubmit = useCallback(
-        ({ name }: FormInput) => {
+        ({ name, description }: FormInput) => {
             mutate(
                 { name },
                 {
@@ -110,6 +112,7 @@ function Organizations() {
                         <DialogContent>
                             <Stack spacing={2}>
                                 <TextInput<FormInput> name="name" label="Nazwa" />
+                                <TextInput<FormInput> name="description" label="Opis" multiline rows={4} />
                             </Stack>
                         </DialogContent>
                         <DialogActions>

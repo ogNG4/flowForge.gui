@@ -37,6 +37,9 @@ export interface paths {
   "/project/details/{projectId}": {
     get: operations["ProjectController_getProjectDetails"];
   };
+  "/project/time-spent/{projectId}": {
+    get: operations["ProjectController_getProjectTimeStats"];
+  };
   "/project-board/{projectId}": {
     get: operations["ProjectBoardController_getProjectBoard"];
   };
@@ -62,6 +65,12 @@ export interface paths {
   "/project-task/time-log": {
     post: operations["ProjectTaskController_createTimeLog"];
   };
+  "/project-sprint": {
+    post: operations["ProjectSprintController_createSprint"];
+  };
+  "/project-sprint/active/{projectId}": {
+    get: operations["ProjectSprintController_getActiveSprint"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -83,6 +92,7 @@ export interface components {
     };
     CreateOrganizationInputDto: {
       name: string;
+      description: string | null;
     };
     OrganizationOwnerDto: {
       id: string;
@@ -124,6 +134,33 @@ export interface components {
       id: string;
       name: string;
     };
+    TaskTimeEntryDto: {
+      taskId: string;
+      taskCode: string;
+      timeSpent: number;
+    };
+    UserWithTasksTimeDto: {
+      user: components["schemas"]["TaskAssignedUserDto"];
+      taskTimes: components["schemas"]["TaskTimeEntryDto"][];
+      totalTimeSpent: number;
+    };
+    UserTimeEntryDto: {
+      user: components["schemas"]["TaskAssignedUserDto"];
+      timeSpent: number;
+    };
+    TaskWithUsersTimeDto: {
+      taskId: string;
+      taskCode: string;
+      userTimes: components["schemas"]["UserTimeEntryDto"][];
+      totalTimeSpent: number;
+    };
+    ProjectTimeSpentDto: {
+      projectId: string;
+      projectName: string;
+      userStats: components["schemas"]["UserWithTasksTimeDto"][];
+      taskStats: components["schemas"]["TaskWithUsersTimeDto"][];
+      totalTimeSpent: number;
+    };
     BoardTaskDto: {
       id: string;
       name: string;
@@ -142,6 +179,7 @@ export interface components {
     ProjectBoardDto: {
       columns: components["schemas"]["ProjectColumnWithTasksDto"][];
       organizationId: string;
+      name: string;
     };
     ProjectColumnDto: {
       id: string;
@@ -195,6 +233,25 @@ export interface components {
       taskId: string;
       timeSpent: number;
       description?: string;
+    };
+    CreateSprintInputDto: {
+      name: string;
+      /** Format: date-time */
+      startDate: string;
+      /** Format: date-time */
+      endDate: string;
+      projectId: string;
+      isActive: boolean;
+    };
+    SprintDto: {
+      id: string;
+      number: number;
+      goal: string;
+      /** Format: date-time */
+      startDate: string;
+      /** Format: date-time */
+      endDate: string;
+      isActive: boolean;
     };
   };
   responses: never;
@@ -359,6 +416,21 @@ export interface operations {
       };
     };
   };
+  ProjectController_getProjectTimeStats: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get project time statistics */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectTimeSpentDto"];
+        };
+      };
+    };
+  };
   ProjectBoardController_getProjectBoard: {
     parameters: {
       path: {
@@ -479,6 +551,34 @@ export interface operations {
     responses: {
       201: {
         content: never;
+      };
+    };
+  };
+  ProjectSprintController_createSprint: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateSprintInputDto"];
+      };
+    };
+    responses: {
+      /** @description Sprint created successfully */
+      201: {
+        content: never;
+      };
+    };
+  };
+  ProjectSprintController_getActiveSprint: {
+    parameters: {
+      path: {
+        projectId: string;
+      };
+    };
+    responses: {
+      /** @description Get active sprint for project */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SprintDto"];
+        };
       };
     };
   };
