@@ -47,6 +47,12 @@ interface ProjectFormProps {
     isLoading: boolean;
 }
 
+const roleTranslations: Record<OrganizationMemberRole, string> = {
+    Owner: 'Właściciel',
+    Admin: 'Administrator',
+    Member: 'Użytkownik',
+};
+
 function MemberForm({ open, onClose, onSubmit, isLoading }: MemberFormProps) {
     const memberValidationSchema = useMemo(() => {
         return yup.object().shape({
@@ -229,9 +235,15 @@ function OrganizationDetails() {
                 ),
                 width: 200,
             },
-
             { field: 'joinedAt', headerName: 'Dołączono', width: 400 },
-            { field: 'role', headerName: 'Rola', flex: 1 },
+            {
+                field: 'role',
+                headerName: 'Rola',
+                flex: 1,
+                valueFormatter: (params) => {
+                    return roleTranslations[params as OrganizationMemberRole] || params;
+                },
+            },
         ];
     }, []);
 

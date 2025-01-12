@@ -61,7 +61,7 @@ function EditForm() {
     const methods = useFormContext<FormInput>();
     const { getValues } = methods;
     const organizationId = getValues('organizationId');
-    const { data: members } = useOrganizationMembersQuery({ organizationId: organizationId });
+    const { data: members } = useOrganizationMembersQuery({ organizationId }, { enabled: !!organizationId });
 
     const sortedColumns = useMemo(() => {
         return columns ? [...columns].sort((a, b) => a.order - b.order) : [];
@@ -252,6 +252,12 @@ function TaskDialog() {
         resolver: yupResolver(validationSchema as yup.ObjectSchema<FormInput>),
     });
     const { handleSubmit, reset } = methods;
+    console.log(projectDetails?.organizationId, 'projectDetails?.organizationId');
+    console.log(task?.organizationId, 'task?.organizationId');
+
+    const organizationId = useMemo(() => {
+        return projectDetails?.organizationId || task?.organizationId || '';
+    }, [projectDetails?.organizationId, task?.organizationId]);
 
     useEffect(() => {
         reset({
@@ -259,15 +265,15 @@ function TaskDialog() {
             columnId: task?.columnId || columns?.[0]?.id || '',
             name: task?.name || '',
             content: task?.content || '',
-            organizationId: projectDetails?.organizationId || task?.organizationId || '',
+            organizationId,
             assignedUserId: task?.assignedUser?.id || '',
             assignedUserName: (task?.assignedUser?.name as string) || '',
             code: task?.code || '',
             estimatedTime: minutesToTimeString(task?.estimatedTime || 0),
-            totalTimeSpent: task?.totalTimeSpent,
+            totalTimeSpent: task?.totalTimeSpent || 0,
             isBacklog: location.state?.isBacklog || task?.isBacklog || false,
         });
-    }, [task, columns, location.state]);
+    }, [task, columns, location.state, organizationId]);
 
     const onSubmit = useCallback(
         async (data: FormInput) => {
@@ -310,7 +316,7 @@ function TaskDialog() {
 
     return (
         <>
-            <Dialog open onClose={() => navigate(-1)} fullWidth maxWidth="md">
+            <Dialog open onClose={() => navigate(`/projects/${projectId}`)} fullWidth maxWidth="md">
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <DialogContent sx={{ minHeight: '40vh' }}>
@@ -333,7 +339,7 @@ function TaskDialog() {
                                         </Button>
                                     </Else>
                                 </If>
-                                <Button type="submit" variant="text" onClick={() => navigate(-1)}>
+                                <Button type="submit" variant="text" onClick={() => navigate(`/projects/${projectId}`)}>
                                     Anuluj
                                 </Button>
                             </Box>

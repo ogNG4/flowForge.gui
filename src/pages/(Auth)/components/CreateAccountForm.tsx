@@ -28,14 +28,14 @@ function CreateAccountForm() {
     const [show, setShow] = useState(false);
     const validationSchema = useMemo(() => {
         return yup.object().shape({
-            email: yup.string().required(t('Email is required')).email(t('Email is invalid')),
-            password: yup.string().required(t('Password is required')),
+            email: yup.string().required(t('Email jest wymagany')).email(t('Email jest niepoprawny')),
+            password: yup.string().required(t('Hasło jest wymagane')),
             repeatPassword: yup
                 .string()
-                .required(t('Repeat password is required'))
-                .oneOf([yup.ref('password')], t('Passwords must match')),
-            firstName: yup.string().required(t('First name is required')),
-            lastName: yup.string().required(t('Last name is required')),
+                .required(t('Hasło jest wymagane'))
+                .oneOf([yup.ref('password')], t('Hasła muszą się zgadzać')),
+            firstName: yup.string().required(t('Imię jest wymagane')),
+            lastName: yup.string().required(t('Nazwisko jest wymagane')),
         });
     }, []);
 

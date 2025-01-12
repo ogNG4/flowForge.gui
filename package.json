@@ -1,5 +1,5 @@
 {
-    "name": "flow-forge.gui",
+    "name": "tablica-kanban.gui",
     "private": true,
     "version": "0.0.0",
     "type": "module",

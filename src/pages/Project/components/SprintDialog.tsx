@@ -1,4 +1,14 @@
-import { Dialog, DialogContent, DialogActions, Button, Stack, Typography, Divider } from '@mui/material';
+import {
+    Dialog,
+    DialogContent,
+    DialogActions,
+    Button,
+    Stack,
+    Typography,
+    Divider,
+    Checkbox,
+    FormControlLabel,
+} from '@mui/material';
 import { FormProvider, useForm } from 'react-hook-form';
 import TextInput from '@/components/Form/TextInput';
 import LoadingButton from '@/components/Button/LoadingButton';
@@ -27,6 +37,7 @@ interface SprintDialogProps {
         startDate: string;
         endDate: string;
         goal: string;
+        moveToNext: string;
     };
 }
 
@@ -46,6 +57,7 @@ function SprintDialog({ open, onClose, projectId, currentSprint }: SprintDialogP
         defaultValues: {
             startDate: dayjs().format('YYYY-MM-DD'),
             endDate: dayjs().add(2, 'week').format('YYYY-MM-DD'),
+            moveToNext: true,
         },
     });
 
@@ -89,7 +101,7 @@ function SprintDialog({ open, onClose, projectId, currentSprint }: SprintDialogP
                                 </>
                             )}
                             <Typography variant="h6">Nowy Sprint</Typography>
-                            <TextInput<SprintFormInput> name="name" label="Nazwa" />
+                            {/* <TextInput<SprintFormInput> name="name" label="Nazwa" /> */}
                             <Stack direction="row" spacing={2}>
                                 <DatePicker
                                     label="Data rozpoczęcia"
@@ -103,6 +115,15 @@ function SprintDialog({ open, onClose, projectId, currentSprint }: SprintDialogP
                                 />
                             </Stack>
                             <TextInput<SprintFormInput> name="goal" label="Cel sprintu" multiline rows={3} />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        defaultChecked
+                                        onChange={(e) => methods.setValue('moveToNext', e.target.checked)}
+                                    />
+                                }
+                                label="Przenieś niezakończone zadania do następnego sprintu"
+                            />
                         </Stack>
                     </DialogContent>
                     <DialogActions>

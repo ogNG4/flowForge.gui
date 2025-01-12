@@ -79,16 +79,20 @@ function ProjectTimeDetails() {
                 ))}
             </Stack>
 
-            {/* Wykresy */}
             <Stack direction="row" spacing={2} className="mt-4">
                 <Paper className="p-4 flex-1">
                     <Typography variant="h6" className="mb-4">
                         Czas według użytkowników
                     </Typography>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={350}>
                         <BarChart data={userChartData}>
                             <XAxis dataKey="name" />
-                            <YAxis tickFormatter={(value) => minutesToTimeString(value)} />
+                            <YAxis
+                                tickFormatter={(value) => minutesToTimeString(value)}
+                                domain={[0, 'auto']}
+                                interval={0}
+                                width={100}
+                            />
                             <Tooltip
                                 formatter={(value: number, name: string, props: any) => [
                                     props.payload.czasFormatted,
@@ -105,10 +109,20 @@ function ProjectTimeDetails() {
                     <Typography variant="h6" className="mb-4">
                         Czas według zadań
                     </Typography>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={350}>
                         <BarChart data={taskChartData}>
                             <XAxis dataKey="name" />
-                            <YAxis tickFormatter={(value) => minutesToTimeString(value)} />
+                            <YAxis
+                                tickFormatter={(value) => minutesToTimeString(value)}
+                                domain={[0, (dataMax: number) => Math.ceil(dataMax / 60) * 60]}
+                                ticks={Array.from(
+                                    { length: 6 },
+                                    (_, i) =>
+                                        i *
+                                        Math.ceil((Math.max(...(taskChartData?.map((d) => d.czas) || [0])) / 300) * 60)
+                                )}
+                                width={100}
+                            />
                             <Tooltip
                                 formatter={(value: number, name: string, props: any) => [
                                     props.payload.czasFormatted,

@@ -10,6 +10,7 @@ import {
     useSearchValue,
     useUpdateTaskColumnMutation,
     useModal,
+    useUpdateColumnsOrderMutation,
 } from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/constants/queryKeys';
@@ -45,6 +46,7 @@ export default function ProjectDetails() {
     );
     const { data: activeSprint } = useActiveSprintQuery({ projectId: id as string });
     const { open, handleOpen, handleClose } = useModal();
+    const { mutate: updateColumnOrder } = useUpdateColumnsOrderMutation();
 
     const filteredColumns = useMemo(() => {
         if (!columns) return [];
@@ -72,7 +74,34 @@ export default function ProjectDetails() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (over && active.id !== over.id) {
+        if (!over || active.id === over.id) return;
+
+        const activeData = active.data.current;
+        if (activeData?.type === 'column') {
+            const activeColumnId = activeData.id;
+            const activeColumnIndex = columns?.findIndex((col) => col.id === activeColumnId) || 0;
+            const overColumnIndex = columns?.findIndex((col) => col.id === over.id) || 0;
+
+            const updatedColumns = [...(columns || [])];
+            const [movedColumn] = updatedColumns.splice(activeColumnIndex, 1);
+            updatedColumns.splice(overColumnIndex, 0, movedColumn);
+
+            const columnsWithOrder = updatedColumns.map((column, index) => ({
+                id: column.id,
+                order: index,
+            }));
+
+            updateColumnOrder(
+                {
+                    columns: columnsWithOrder,
+                },
+                {
+                    onSuccess: () => {
+                        client.invalidateQueries({ queryKey: [queryKeys.projectBoard, id] });
+                    },
+                }
+            );
+        } else {
             const overColumn = columns?.find((column) => column.id === over.id);
             const overTasks = overColumn?.tasks || [];
             const activeIndex = overTasks.findIndex((task) => task.id === active.id);

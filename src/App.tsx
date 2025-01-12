@@ -24,15 +24,13 @@ function App() {
     return (
         <>
             <QueryClientProvider client={queryClient}>
-                <ChakraProvider theme={theme}>
-                    <ThemeProvider>
-                        <Suspense fallback={<PageLoader />}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
-                                <RouterProvider router={router} />
-                            </LocalizationProvider>
-                        </Suspense>
-                    </ThemeProvider>
-                </ChakraProvider>
+                <ThemeProvider>
+                    <Suspense fallback={<PageLoader />}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
+                            <RouterProvider router={router} />
+                        </LocalizationProvider>
+                    </Suspense>
+                </ThemeProvider>
             </QueryClientProvider>
         </>
     );
